@@ -1,0 +1,19 @@
+{
+  "name": "dpws-bench",
+  "version": "0.0.1",
+  "description": "DPWS device benchmark",
+  "main": "index.js",
+  "bin": {
+    "dpws-bench": "./index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Dan Milon <i@danmilon.me>",
+  "license": "BSD-2-Clause",
+  "private": true,
+  "dependencies": {
+    "optimist": "~0.6.0",
+    "async": "~0.2.9"
+  }
+}
