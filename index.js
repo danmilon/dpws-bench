@@ -10,7 +10,10 @@ var argv = require('optimist')
   .describe('n', 'number of times to call operation')
   .alias('c', 'concurrency')
   .describe('c', 'number of concurrent invokcations')
+  .boolean('s')
+  .alias('s', 'stats')
   .default('n', 5)
+  .default('s', false)
   .argv
 
 if (argv._.length !== 1) {
@@ -32,25 +35,45 @@ if (command === 'search') {
 else if (command === 'invoke') {
   var address = argv.address
     , operation = argv.operation
-    , times = argv.n
+    , rootStart = process.hrtime()
 
   var queue = async.queue(worker, argv.concurrency)
 
-  function worker(reqOpts, cb) {
-    client.invoke(reqOpts, cb)
+  console.log('# id duration(ms)')
+  function worker(req, cb) {
+    var timeStart = process.hrtime()
+    client.invoke(req, function (err, res) {
+      if (err) {
+        throw err
+      }
+
+      var timeEnd = process.hrtime()
+      var duration = [timeEnd[0] - timeStart[0], timeEnd[1] - timeStart[1] ]
+        , durationMs = duration[0] * 1e3 + duration[1] / 1e6
+
+      process.stdout.write(req.id.toString() + ' ' + durationMs.toString() + '\n')
+
+      cb()
+    })
   }
 
-  var reqOpts = {
-    to: 'http://192.168.1.2:8080/_SERVICE_ID_',
-    action: 'http://192.168.1.2:8080/_SERVICE_ID_/GetStatus'
-  }
+  for (var i = 1; i <= argv.n; i++) {
+    var reqOpts = {
+      to: 'http://192.168.1.10:1337/_SERVICE_ID_',
+      action: 'http://192.168.1.10:1337/_SERVICE_ID_/GetStatus',
+      id: i
+    }
 
-  for (var i = 0; i < argv.n; i++) {
     queue.push(reqOpts)
   }
 
   queue.drain = function () {
-    console.log('done')
+    var duration = process.hrtime(rootStart)
+      , duration = duration[0] + duration[1] / 1e9
+      , rps = argv.n / duration
+
+    console.log('# rps: ' + rps)
+    console.error('done')
     client.close()
   }
 }
