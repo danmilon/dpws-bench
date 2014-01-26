@@ -14,6 +14,9 @@ var argv = require('optimist')
   .alias('s', 'stats')
   .default('n', 5)
   .default('s', false)
+  .alias('h', 'host')
+  .describe('h', 'host or ip host:port')
+  .demand(['h'])
   .argv
 
 if (argv._.length !== 1) {
@@ -59,8 +62,8 @@ else if (command === 'invoke') {
 
   for (var i = 1; i <= argv.n; i++) {
     var reqOpts = {
-      to: 'http://192.168.1.10:1337/_SERVICE_ID_',
-      action: 'http://192.168.1.10:1337/_SERVICE_ID_/GetStatus',
+      to: 'http://' + argv.host + '/_SERVICE_ID_',
+      action: 'http://' + argv.host + '/_SERVICE_ID_/GetStatus',
       id: i
     }
 
